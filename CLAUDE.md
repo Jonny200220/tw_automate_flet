@@ -68,25 +68,35 @@ solo lleva config compartida de Supabase, con `anon key` + RLS (nunca `service_r
 ## Portales
 
 Cada uno hereda de `Portal` (`portales/base.py`) e implementa `login()` y `descargar()`.
-Los selectores actuales se extrajeron del DOM real, pero **los logins no están probados
-con credenciales**.
 
 | Portal | Stack | Particularidad |
 |---|---|---|
 | Provecomer | Java/JSP legacy | Captcha de texto; la imagen llega como data URI base64 en `#captchaImage`, por eso se renderiza dentro de la app en vez de obligar a mirar el navegador |
-| HEB Business | ASP.NET MVC | Sin captcha en login (el reCAPTCHA del HTML es del form de recuperar contraseña) |
-| Soriana | SPA de SAP UI5 | Cloudflare + IDs con prefijo generado: anclar con `[id$='logon_user-inner']`, nunca con el ID completo |
+| HEB Business | ASP.NET MVC + Power BI | Sin captcha en login. El reporte vive en un iframe (`#embedContainer iframe`) y se exporta por `data-testid` de Power BI |
+| Soriana | SPA de SAP UI5 | Cloudflare + IDs con prefijo generado: anclar por rol accesible, o con `[id$=...]` cuando no hay rol |
+| Towell | Odoo interno | La URL sale de `TOWELL_URL` en el `.env` (cambia de host); el usuario es un número de empleado en un `spinbutton` |
+
+**Selectores: rol accesible primero, ID como fallback.** Los flujos de HEB, Soriana y
+Towell se portaron de scrapers ya probados contra esos portales, que resuelven todo con
+`get_by_role` / `get_by_label`. Los selectores por ID salieron del DOM pero nunca pasaron
+un login real: quedan como plan B, no como opción principal.
+
+**Nada de listas fijas de filas ni fechas hardcodeadas.** Los scrapers originales traían
+números de pedido y un mes clavados del codegen. Acá las filas se descubren por rol
+(`row` que contenga "Exportar detalle") y las fechas se calculan de la fecha del sistema,
+con override en caliente: `PORTALES["soriana"].dia_fin = "15"`.
 
 En Provecomer, si el error de login **no** menciona captcha, cortar de inmediato en vez
 de gastar reintentos contra credenciales incorrectas.
 
-## Estado: `descargar()` sin implementar
+## Estado
 
-Los tres portales lanzan `NotImplementedError` en `descargar()`. El árbol de reportes solo
-existe con sesión iniciada, así que **no se puede programar a ciegas**. El flujo previsto es
-correr `explorar <portal>`, navegar a mano hasta los reportes y descargarlos; eso deja un
-`descargas/mapa_<portal>_*.json` con las URLs visitadas y las descargas hechas, y de ahí se
-escribe la navegación real.
+`descargar()` está implementado en HEB Business, Soriana y Towell, pero **ninguno se
+probó de punta a punta con credenciales reales**. Provecomer sigue lanzando
+`NotImplementedError`: su árbol de reportes solo existe con sesión iniciada y no hay un
+scraper de referencia, así que hay que correr `explorar provecomer`, navegar a mano hasta
+los reportes y descargarlos; eso deja un `descargas/mapa_provecomer_*.json` con las URLs
+visitadas y de ahí se escribe la navegación real.
 
 Pendientes después de eso: parseo de xlsx/xls/txt y carga a Supabase (con hash SHA-256 por
 archivo para no duplicar reportes entre corridas).
