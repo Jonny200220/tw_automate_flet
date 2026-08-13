@@ -17,8 +17,11 @@ tablero -> rango de fechas -> "Exportar detalle" por fila -> "Exportar" general.
 
 from __future__ import annotations
 
+import threading
+from contextlib import contextmanager
 from datetime import date
 from pathlib import Path
+from typing import Iterator
 
 from playwright.sync_api import Locator, Page
 
@@ -38,6 +41,12 @@ BOTONES_DIALOGO = ("Leído", "Terminar", "Sí")
 
 # Generar el reporte del lado del servidor tarda más que un click normal.
 TIMEOUT_EXPORTACION_MS = 120_000
+
+# El tablero UI5 tarda ~40s+ en montar el rango de fechas y poblar la tabla.
+TIMEOUT_FILTROS_MS = 90_000
+
+MSG_ESPERANDO = "Esperando a que la plataforma responda..."
+INTERVALO_AVISO_S = 8
 
 
 class Soriana(Portal):
@@ -186,6 +195,16 @@ class Soriana(Portal):
             if localizador.count():
                 localizador.first.click()
                 ui.log("Tablero abierto", "info")
+                try:
+                    with self._mientras_espera(ui):
+                        page.get_by_label("Abrir selector").first.wait_for(
+                            state="visible", timeout=TIMEOUT_FILTROS_MS
+                        )
+                except Exception as exc:
+                    raise ErrorPortal(
+                        "El tablero abrió pero los filtros no aparecieron a tiempo"
+                    ) from exc
+                ui.log("Filtros listos", "ok")
                 return
         raise ErrorPortal(
             "No se encontró el tablero de pedidos. Los IDs de UI5 cambiaron: "
@@ -203,13 +222,21 @@ class Soriana(Portal):
         ui.log(f"Rango: {inicio} al {fin} de {ancla.split(' de ', 1)[1]}", "info")
 
         try:
-            page.get_by_label("Abrir selector").first.click()
+            page.get_by_label("Abrir selector").first.click(timeout=TIMEOUT_FILTROS_MS)
             mes = page.get_by_label(ancla, exact=True)
             mes.get_by_text(inicio, exact=True).first.click()
             page.get_by_text(fin, exact=True).first.click()
             page.get_by_role("button", name="Ir").first.click()
         except Exception as exc:
             raise ErrorPortal(f"No se pudo fijar el rango de fechas: {exc}") from exc
+
+        filas = page.get_by_role("row").filter(has=page.get_by_label("Exportar detalle"))
+        try:
+            with self._mientras_espera(ui):
+                filas.first.wait_for(state="visible", timeout=TIMEOUT_FILTROS_MS)
+            ui.log("Resultados del rango listos", "ok")
+        except Exception:  # noqa: BLE001 - un rango vacío es válido
+            pass
 
     def _exportar_detalles(self, page: Page, ui: PuenteUI, destino: Path) -> list[Path]:
         """Un archivo por fila con botón 'Exportar detalle'.
@@ -229,11 +256,13 @@ class Soriana(Portal):
             if ui.cancelado():
                 raise ErrorPortal("Cancelado por el usuario")
 
-            ui.progreso(indice, total + 1, f"Soriana: detalle {indice + 1}/{total}")
+            ui.progreso(indice, total + 1, MSG_ESPERANDO)
+            ui.log(f"Exportando detalle {indice + 1}/{total}", "info")
             fila = filas.nth(indice)
             try:
-                with page.expect_download(timeout=TIMEOUT_EXPORTACION_MS) as info:
-                    fila.get_by_label("Exportar detalle").first.click()
+                with self._mientras_espera(ui):
+                    with page.expect_download(timeout=TIMEOUT_EXPORTACION_MS) as info:
+                        fila.get_by_label("Exportar detalle").first.click()
                 archivos.append(guardar_descarga(info.value, destino, self.clave))
             except Exception as exc:  # noqa: BLE001 - una fila no tumba a las demás
                 ui.log(f"Fila {indice + 1} sin exportar: {exc}", "error")
@@ -243,12 +272,32 @@ class Soriana(Portal):
     def _exportar_general(self, page: Page, ui: PuenteUI, destino: Path) -> list[Path]:
         ui.log("Exportando reporte general", "info")
         try:
-            with page.expect_download(timeout=TIMEOUT_EXPORTACION_MS) as info:
-                page.get_by_role("button", name="Exportar", exact=True).first.click()
+            with self._mientras_espera(ui):
+                with page.expect_download(timeout=TIMEOUT_EXPORTACION_MS) as info:
+                    page.get_by_role("button", name="Exportar", exact=True).first.click()
             return [guardar_descarga(info.value, destino, self.clave)]
         except Exception as exc:  # noqa: BLE001 - los detalles ya se bajaron
             ui.log(f"Reporte general sin exportar: {exc}", "error")
             return []
+
+    @contextmanager
+    def _mientras_espera(self, ui: PuenteUI) -> Iterator[None]:
+        """Repite el aviso cada 8 s para que la bitácora no se quede muda."""
+        parar = threading.Event()
+
+        def latir() -> None:
+            while not parar.wait(INTERVALO_AVISO_S):
+                ui.log(MSG_ESPERANDO, "info")
+                ui.progreso(0, 0, MSG_ESPERANDO)
+
+        ui.log(MSG_ESPERANDO, "info")
+        ui.progreso(0, 0, MSG_ESPERANDO)
+        hilo = threading.Thread(target=latir, daemon=True)
+        hilo.start()
+        try:
+            yield
+        finally:
+            parar.set()
 
     def _cerrar_sesion(self, page: Page, ui: PuenteUI) -> None:
         """Best-effort: las descargas ya están, un logout fallido no importa."""

@@ -46,7 +46,8 @@ class PuenteFlet:
         self.page.update()
 
     def progreso(self, actual: int, total: int, etiqueta: str = "") -> None:
-        self.barra.value = (actual / total) if total else 0
+        if total:
+            self.barra.value = actual / total
         self.etiqueta.value = etiqueta
         self.page.update()
 

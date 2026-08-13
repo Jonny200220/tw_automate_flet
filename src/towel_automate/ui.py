@@ -50,7 +50,10 @@ class PuenteConsola:
         print(f"{marca} {mensaje}")
 
     def progreso(self, actual: int, total: int, etiqueta: str = "") -> None:
-        print(f"     {actual}/{total} {etiqueta}".rstrip())
+        if total:
+            print(f"     {actual}/{total} {etiqueta}".rstrip())
+        elif etiqueta:
+            print(f"     {etiqueta}")
 
     def pedir_captcha(self, png: bytes, portal: str, intento: int = 1) -> str | None:
         ruta = f"captcha_{portal.lower()}.png"

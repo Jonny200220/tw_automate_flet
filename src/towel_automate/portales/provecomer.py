@@ -21,7 +21,7 @@ INTENTOS_CAPTCHA = 4
 class Provecomer(Portal):
     clave = "provecomer"
     nombre = "Provecomer"
-    url_login = "https://www.provecomer.com.mx/webPrvd/LoginProvecomerNpSrv"
+    url_login = "https://www.provecomer.com.mx/provecomer_angular/#/auth/login"
     requiere_captcha = True
 
     SEL_USUARIO = "#proveedor"
