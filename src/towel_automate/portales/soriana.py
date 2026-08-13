@@ -266,7 +266,7 @@ class Soriana(Portal):
                         fila.get_by_label("Exportar detalle").first.click()
                 archivos.append(
                     guardar_descarga(
-                        info.value, destino, self.clave, self.area,
+                        info.value, destino, self.nombre_carpeta, self.area,
                         prefijo=f"detalle_{indice + 1}",
                     )
                 )
@@ -282,7 +282,7 @@ class Soriana(Portal):
                 with page.expect_download(timeout=TIMEOUT_EXPORTACION_MS) as info:
                     page.get_by_role("button", name="Exportar", exact=True).first.click()
             return [
-                guardar_descarga(info.value, destino, self.clave, self.area, prefijo="general")
+                guardar_descarga(info.value, destino, self.nombre_carpeta, self.area, prefijo="general")
             ]
         except Exception as exc:  # noqa: BLE001 - los detalles ya se bajaron
             ui.log(f"Reporte general sin exportar: {exc}", "error")

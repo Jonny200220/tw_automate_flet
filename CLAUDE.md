@@ -65,6 +65,25 @@ continúa con los demás.
 (`config.py`), nunca a archivos — son 5-10 personas con credenciales distintas. El `.env`
 solo lleva config compartida de Supabase, con `anon key` + RLS (nunca `service_role`).
 
+**Dónde caen los archivos.** La app corre en máquinas ajenas, así que los reportes van al
+escritorio, no junto al código:
+
+```
+<Escritorio>/towell_automate/providers/<portal>/<AAAAMMDD>_<area>/<archivos>
+```
+
+`carpeta_descarga()` (`portales/base.py`) crea lo que falte y reusa lo que exista; dos
+corridas del mismo día sobre la misma área comparten carpeta, y `_ruta_libre()` evita que
+la segunda pise a la primera. El escritorio se resuelve por registro de Windows, no con
+`~/Desktop`: en Windows en español es "Escritorio" y con OneDrive está redirigido.
+
+`dir_temporal` (`downloads/`, junto al código) es otra cosa: ahí Playwright deja el
+archivo a medio bajar antes de que `save_as()` escriba el definitivo.
+
+Cada portal declara `area` (de dónde sale el reporte) y, si difiere de `clave`, `carpeta`.
+`clave` no se puede cambiar a la ligera: también indexa el keyring, y renombrarla dejaría
+a todos sin sus credenciales guardadas.
+
 ## Portales
 
 Cada uno hereda de `Portal` (`portales/base.py`) e implementa `login()` y `descargar()`.

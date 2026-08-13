@@ -170,7 +170,7 @@ class Heb2b(Portal):
         except PlaywrightTimeoutError as exc:
             raise ErrorPortal("La exportación de Power BI no generó archivo") from exc
 
-        return [guardar_descarga(info.value, destino, self.clave, self.area)]
+        return [guardar_descarga(info.value, destino, self.nombre_carpeta, self.area)]
 
     def _cerrar_sesion(self, page: Page, ui: PuenteUI) -> None:
         """Best-effort: la descarga ya está, un logout fallido no importa."""

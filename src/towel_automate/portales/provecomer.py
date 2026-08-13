@@ -214,7 +214,7 @@ class Provecomer(Portal):
             ui.log(f"Reporte {columna} sin descargar: {exc}", "error")
             return None
 
-        return guardar_descarga(info.value, destino, self.clave, self.area, prefijo=columna)
+        return guardar_descarga(info.value, destino, self.nombre_carpeta, self.area, prefijo=columna)
 
     def _cerrar_sesion(self, page: Page, ui: PuenteUI) -> None:
         """Best-effort: los archivos ya están, un logout fallido no importa."""
