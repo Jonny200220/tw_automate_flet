@@ -111,14 +111,28 @@ if (-not (Test-Path $lanzador)) {
 $escritorio = [Environment]::GetFolderPath("Desktop")
 $acceso = Join-Path $escritorio "Towell Automate.lnk"
 
+# CreateShortcut sobre un .lnk que ya existe no pisa sus propiedades: si quedó
+# a medio escribir de un intento anterior, el acceso directo se queda sin
+# destino y no abre nada. Se borra primero y se crea de cero.
+if (Test-Path $acceso) { Remove-Item $acceso -Force }
+
 $shell = New-Object -ComObject WScript.Shell
 $enlace = $shell.CreateShortcut($acceso)
 $enlace.TargetPath = $lanzador
 $enlace.WorkingDirectory = $raiz
 $enlace.Description = "Descarga los reportes de los portales de proveedores"
 $enlace.WindowStyle = 7   # minimizada: la ventana útil es la de la app
-if ($chrome) { $enlace.IconLocation = "$chrome,0" }
+# Sin IconLocation a propósito: apuntarlo a "C:\Program Files\...\chrome.exe,0"
+# deja el .lnk sin TargetPath. El icono lindo no vale un acceso directo muerto.
 $enlace.Save()
+
+# Verificación: un .lnk sin destino se ve normal en el escritorio y no hace nada.
+# Hay que releerlo con un WScript.Shell nuevo; el mismo objeto devuelve el
+# shortcut que tiene en memoria y siempre diría que está bien.
+$comprobar = (New-Object -ComObject WScript.Shell).CreateShortcut($acceso)
+if (-not $comprobar.TargetPath) {
+    throw "El acceso directo se creó vacío. Abrí towell_automate.bat directamente y avisá de este error."
+}
 Escribir-Ok "Listo: $acceso"
 
 Write-Host ""

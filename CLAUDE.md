@@ -15,9 +15,22 @@ El código, los comentarios y los identificadores están en español. Mantener e
 ```bash
 uv sync                              # instalar dependencias
 uv run towel-automate                # abrir la app (GUI Flet)
-uv run towel-automate explorar <portal>   # modo grabación: provecomer | heb2b | soriana
+uv run towel-automate explorar <portal>   # modo grabación: provecomer | heb2b | soriana | towell
 uv run playwright install chromium   # solo si no hay Chrome del sistema
 ```
+
+En una máquina nueva se corre `instalar.ps1` (clic derecho > Ejecutar con
+PowerShell): baja uv, sincroniza, revisa Chrome, crea el `.env` y deja el acceso
+directo del escritorio que apunta a `towell_automate.bat`. Es idempotente.
+Instrucciones para el usuario final en `INSTALACION.md`.
+
+Dos trampas del `.lnk` que ya costaron una vuelta, no reintroducirlas:
+`IconLocation` con espacios en la ruta deja el acceso directo **sin TargetPath**,
+y releer un shortcut con el mismo objeto `WScript.Shell` que lo creó devuelve
+siempre lo que hay en memoria, no lo que quedó en disco.
+
+`flet` va declarado como `flet[desktop]`: sin ese extra, `uv sync` deja el
+entorno sin `flet-desktop` y la ventana no abre.
 
 No hay suite de tests ni linter configurados todavía.
 
