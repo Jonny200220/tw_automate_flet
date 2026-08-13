@@ -71,7 +71,7 @@ Cada uno hereda de `Portal` (`portales/base.py`) e implementa `login()` y `desca
 
 | Portal | Stack | Particularidad |
 |---|---|---|
-| Provecomer | Java/JSP legacy | Captcha de texto; la imagen llega como data URI base64 en `#captchaImage`, por eso se renderiza dentro de la app en vez de obligar a mirar el navegador |
+| Provecomer | SPA de Angular Material | Captcha de texto: la imagen llega como data URI base64 en `img.captcha-image`, por eso se renderiza dentro de la app. Campos por `formControlName`, nunca por los `mat-input-N` que numera Angular. El submit no navega: se espera a que la ruta deje de ser `/auth/login` |
 | HEB Business | ASP.NET MVC + Power BI | Sin captcha en login. El reporte vive en un iframe (`#embedContainer iframe`) y se exporta por `data-testid` de Power BI |
 | Soriana | SPA de SAP UI5 | Cloudflare + IDs con prefijo generado: anclar por rol accesible, o con `[id$=...]` cuando no hay rol |
 | Towell | Odoo interno | La URL sale de `TOWELL_URL` en el `.env` (cambia de host); el usuario es un número de empleado en un `spinbutton` |
@@ -91,15 +91,29 @@ de gastar reintentos contra credenciales incorrectas.
 
 ## Estado
 
-`descargar()` está implementado en HEB Business, Soriana y Towell, pero **ninguno se
-probó de punta a punta con credenciales reales**. Provecomer sigue lanzando
-`NotImplementedError`: su árbol de reportes solo existe con sesión iniciada y no hay un
-scraper de referencia, así que hay que correr `explorar provecomer`, navegar a mano hasta
-los reportes y descargarlos; eso deja un `descargas/mapa_provecomer_*.json` con las URLs
-visitadas y de ahí se escribe la navegación real.
+Los cuatro portales tienen `login()` y `descargar()` implementados. **Solo el login de
+Provecomer está confirmado contra el portal real**; el resto no se probó de punta a punta
+con credenciales.
 
-Pendientes después de eso: parseo de xlsx/xls/txt y carga a Supabase (con hash SHA-256 por
-archivo para no duplicar reportes entre corridas).
+En Provecomer, los cuatro reportes son columnas de la misma tabla
+(`.cdk-column-opcUniv`, `opcImp`, `opcUniv2`, `opcImp2`) y se entra por URL directa a
+`#/ventas-e-inventarios/sub/ventas-e-inven.-mensuales`, no caminando el menú lateral: el
+acordeón se abre y se cierra con el mismo clic. Cada reporte deja un overlay abierto, por
+eso se vuelve a entrar por URL antes del siguiente.
+
+Para mapear un portal que cambie, grabar con codegen y pasarme el archivo:
+
+```bash
+uv run playwright codegen --channel=chrome --target python \
+  --test-id-attribute formcontrolname -o descargas/codegen_<portal>.py "<url>"
+```
+
+El `--test-id-attribute formcontrolname` importa en los portales Angular: sin eso codegen
+ancla a los `mat-input-N`, que se renumeran. Ese archivo queda con las credenciales en
+texto plano; `descargas/` está en `.gitignore` justamente por eso.
+
+Pendientes: parseo de xlsx/xls/txt y carga a Supabase (con hash SHA-256 por archivo para
+no duplicar reportes entre corridas).
 
 ## Flet 0.86
 
