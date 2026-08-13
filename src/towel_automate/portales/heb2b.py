@@ -33,6 +33,7 @@ TIMEOUT_EXPORTACION_MS = 120_000
 class Heb2b(Portal):
     clave = "heb2b"
     nombre = "HEB Business"
+    carpeta = "heb"
     url_login = "https://go.heb2b.com.mx/HEBusiness/"
 
     # Menú lateral. Se pueden sobreescribir en caliente:

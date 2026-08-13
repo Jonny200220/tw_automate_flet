@@ -31,6 +31,15 @@ class Portal(ABC):
     #: "orden_compra", etc. Un portal con varios reportes lo pasa por descarga.
     area: str = "reportes"
 
+    #: Nombre de la carpeta en el escritorio. Vacío = se usa `clave`. Existe
+    #: porque `clave` también indexa el keyring: cambiarla borraría de vista
+    #: las credenciales ya guardadas de todos los usuarios.
+    carpeta: str = ""
+
+    @property
+    def nombre_carpeta(self) -> str:
+        return self.carpeta or self.clave
+
     @abstractmethod
     def login(self, page: Page, credenciales: Credenciales, ui: PuenteUI) -> None:
         """Deja la sesión abierta o lanza ErrorPortal."""

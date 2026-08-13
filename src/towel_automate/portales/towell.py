@@ -37,10 +37,9 @@ class Towell(Portal):
     def url_login(self) -> str:  # type: ignore[override]
         return settings.towell_url
 
-    @property
-    def area(self) -> str:  # type: ignore[override]
-        # Sigue al reporte elegido: si se cambia arriba, la carpeta acompaña.
-        return normalizar(self.reporte)
+    # No se deriva de `reporte`: ese texto es el nombre accesible del menú de
+    # Odoo, que repite palabras ("Cortes de Eficiencia Cortes").
+    area = "cortes_eficiencia"
 
     def _campo_usuario(self, page: Page):
         # Número de empleado: input numérico, no textbox.
