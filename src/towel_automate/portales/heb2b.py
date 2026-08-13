@@ -20,8 +20,8 @@ class Heb2b(Portal):
     nombre = "HEB Business"
     url_login = "https://go.heb2b.com.mx/HEBusiness/"
 
-    SEL_USUARIO = "P3389_1"
-    SEL_PASSWORD = "MqtcK#*0$O"
+    SEL_USUARIO = "#Usuario"
+    SEL_PASSWORD = "#password"
     SEL_ENTRAR = "#btnEntrar"
 
     def sesion_activa(self, page: Page) -> bool:
