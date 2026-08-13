@@ -13,7 +13,7 @@ from playwright.sync_api import Download, Page
 from ..config import Credenciales
 from ..ui import PuenteUI
 
-EXTENSIONES_VALIDAS = {".xlsx", ".xls", ".csv", ".txt", ".zip"}
+EXTENSIONES_VALIDAS = {".xlsx", ".xls", ".csv", ".txt", ".zip", ".pdf"}
 
 
 class ErrorPortal(RuntimeError):

@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     supabase_anon_key: str = ""
     supabase_bucket: str = "reportes"
 
+    # Portal interno: la URL no está fija en el código porque puede cambiar de
+    # host. No es una credencial, por eso va acá y no en el keyring.
+    towell_url: str = ""
+
     dir_descargas: Path = RAIZ / "descargas"
     dir_perfil_navegador: Path = RAIZ / ".perfil_navegador"
 
