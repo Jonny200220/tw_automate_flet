@@ -24,8 +24,8 @@ class Provecomer(Portal):
     url_login = "https://www.provecomer.com.mx/webPrvd/LoginProvecomerNpSrv"
     requiere_captcha = True
 
-    SEL_USUARIO = "#proveedor"
-    SEL_PASSWORD = "#password"
+    SEL_USUARIO = "843034"
+    SEL_PASSWORD = "Cautoservicios2013"
     SEL_CAPTCHA_IMG = "#captchaImage"
     SEL_CAPTCHA_INPUT = "#captcha"
     SEL_ENVIAR = "#btnEnviar"
