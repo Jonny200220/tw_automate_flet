@@ -105,12 +105,12 @@ Para mapear un portal que cambie, grabar con codegen y pasarme el archivo:
 
 ```bash
 uv run playwright codegen --channel=chrome --target python \
-  --test-id-attribute formcontrolname -o descargas/codegen_<portal>.py "<url>"
+  --test-id-attribute formcontrolname -o downloads/codegen_<portal>.py "<url>"
 ```
 
 El `--test-id-attribute formcontrolname` importa en los portales Angular: sin eso codegen
 ancla a los `mat-input-N`, que se renumeran. Ese archivo queda con las credenciales en
-texto plano; `descargas/` está en `.gitignore` justamente por eso.
+texto plano; `downloads/` y `codegen_*.py` están en `.gitignore` justamente por eso.
 
 Pendientes: parseo de xlsx/xls/txt y carga a Supabase (con hash SHA-256 por archivo para
 no duplicar reportes entre corridas).

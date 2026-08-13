@@ -53,6 +53,7 @@ class Soriana(Portal):
     clave = "soriana"
     nombre = "Soriana"
     url_login = "https://socios.soriana.com/index/index.html"
+    area = "pedidos"
 
     # Rango de fechas del tablero. En None: del día 1 del mes actual a hoy.
     # Se puede sobreescribir en caliente: PORTALES["soriana"].dia_fin = "15"
@@ -263,7 +264,12 @@ class Soriana(Portal):
                 with self._mientras_espera(ui):
                     with page.expect_download(timeout=TIMEOUT_EXPORTACION_MS) as info:
                         fila.get_by_label("Exportar detalle").first.click()
-                archivos.append(guardar_descarga(info.value, destino, self.clave))
+                archivos.append(
+                    guardar_descarga(
+                        info.value, destino, self.clave, self.area,
+                        prefijo=f"detalle_{indice + 1}",
+                    )
+                )
             except Exception as exc:  # noqa: BLE001 - una fila no tumba a las demás
                 ui.log(f"Fila {indice + 1} sin exportar: {exc}", "error")
 
@@ -275,7 +281,9 @@ class Soriana(Portal):
             with self._mientras_espera(ui):
                 with page.expect_download(timeout=TIMEOUT_EXPORTACION_MS) as info:
                     page.get_by_role("button", name="Exportar", exact=True).first.click()
-            return [guardar_descarga(info.value, destino, self.clave)]
+            return [
+                guardar_descarga(info.value, destino, self.clave, self.area, prefijo="general")
+            ]
         except Exception as exc:  # noqa: BLE001 - los detalles ya se bajaron
             ui.log(f"Reporte general sin exportar: {exc}", "error")
             return []

@@ -11,6 +11,9 @@ wheels/
 
 # Configuración local y datos de la app
 .env
-descargas/
+downloads/
 .perfil_navegador/
 captcha_*.png
+
+# Grabaciones de codegen: quedan con las credenciales en texto plano.
+codegen_*.py

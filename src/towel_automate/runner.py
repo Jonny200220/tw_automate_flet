@@ -27,7 +27,7 @@ def ejecutar(claves: list[str], ui: PuenteUI, destino: Path | None = None) -> li
     carpeta = destino or settings.dir_descargas
     resultados: list[ResultadoPortal] = []
 
-    with contexto_navegador(carpeta) as contexto:
+    with contexto_navegador() as contexto:
         page = pagina_limpia(contexto)
 
         for indice, clave in enumerate(claves, start=1):

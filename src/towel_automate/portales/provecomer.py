@@ -46,6 +46,7 @@ class Provecomer(Portal):
     nombre = "Provecomer"
     url_login = "https://www.provecomer.com.mx/provecomer_angular/#/auth/login"
     requiere_captcha = True
+    area = "ventas_inventarios"
 
     SEL_USUARIO = "input[formcontrolname='username']"
     SEL_PASSWORD = "input[formcontrolname='password']"
@@ -213,7 +214,7 @@ class Provecomer(Portal):
             ui.log(f"Reporte {columna} sin descargar: {exc}", "error")
             return None
 
-        return guardar_descarga(info.value, destino, f"{self.clave}_{columna}")
+        return guardar_descarga(info.value, destino, self.clave, self.area, prefijo=columna)
 
     def _cerrar_sesion(self, page: Page, ui: PuenteUI) -> None:
         """Best-effort: los archivos ya están, un logout fallido no importa."""

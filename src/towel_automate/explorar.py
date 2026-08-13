@@ -45,7 +45,7 @@ def explorar(clave: str) -> Path:
                 print(f"  [url] {url}")
 
         def registrar_descarga(descarga) -> None:
-            destino = settings.dir_descargas / f"explorar_{descarga.suggested_filename}"
+            destino = settings.dir_temporal / f"explorar_{descarga.suggested_filename}"
             descarga.save_as(str(destino))
             bitacora["descargas"].append(
                 {"archivo": descarga.suggested_filename,
@@ -68,7 +68,7 @@ def explorar(clave: str) -> Path:
             pass
 
     sello = datetime.now().strftime("%Y%m%d_%H%M%S")
-    destino = settings.dir_descargas / f"mapa_{clave}_{sello}.json"
+    destino = settings.dir_temporal / f"mapa_{clave}_{sello}.json"
     destino.parent.mkdir(parents=True, exist_ok=True)
     destino.write_text(json.dumps(bitacora, indent=2, ensure_ascii=False), encoding="utf-8")
 

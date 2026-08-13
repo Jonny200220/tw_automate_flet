@@ -24,9 +24,11 @@ from .config import settings
 
 
 @contextmanager
-def contexto_navegador(dir_descargas: Path | None = None) -> Iterator[BrowserContext]:
-    descargas = dir_descargas or settings.dir_descargas
-    descargas.mkdir(parents=True, exist_ok=True)
+def contexto_navegador(dir_temporal: Path | None = None) -> Iterator[BrowserContext]:
+    # Playwright solo escribe acá el archivo a medio bajar. El definitivo lo
+    # coloca save_as() en la carpeta del portal, en el escritorio.
+    temporal = dir_temporal or settings.dir_temporal
+    temporal.mkdir(parents=True, exist_ok=True)
     settings.dir_perfil_navegador.mkdir(parents=True, exist_ok=True)
 
     with sync_playwright() as p:
@@ -34,7 +36,7 @@ def contexto_navegador(dir_descargas: Path | None = None) -> Iterator[BrowserCon
             "user_data_dir": str(settings.dir_perfil_navegador),
             "headless": settings.headless,
             "accept_downloads": True,
-            "downloads_path": str(descargas),
+            "downloads_path": str(temporal),
             "viewport": {"width": 1366, "height": 900},
             "locale": "es-MX",
         }

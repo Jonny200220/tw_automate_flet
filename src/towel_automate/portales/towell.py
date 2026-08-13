@@ -18,7 +18,7 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from ..config import Credenciales, settings
 from ..ui import PuenteUI
-from .base import ErrorPortal, Portal, guardar_descarga
+from .base import ErrorPortal, Portal, guardar_descarga, normalizar
 
 TIMEOUT_EXPORTACION_MS = 120_000
 
@@ -36,6 +36,11 @@ class Towell(Portal):
     @property
     def url_login(self) -> str:  # type: ignore[override]
         return settings.towell_url
+
+    @property
+    def area(self) -> str:  # type: ignore[override]
+        # Sigue al reporte elegido: si se cambia arriba, la carpeta acompaña.
+        return normalizar(self.reporte)
 
     def _campo_usuario(self, page: Page):
         # Número de empleado: input numérico, no textbox.
@@ -119,7 +124,7 @@ class Towell(Portal):
         try:
             with page.expect_download(timeout=TIMEOUT_EXPORTACION_MS) as info:
                 page.get_by_role("button", name=boton).click()
-            return guardar_descarga(info.value, destino, self.clave)
+            return guardar_descarga(info.value, destino, self.clave, self.area)
         except Exception as exc:  # noqa: BLE001 - el otro formato puede salir bien
             ui.log(f"{etiqueta} sin descargar: {exc}", "error")
             return None

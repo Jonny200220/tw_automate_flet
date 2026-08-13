@@ -20,7 +20,7 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from ..config import Credenciales
 from ..ui import PuenteUI
-from .base import ErrorPortal, Portal, guardar_descarga
+from .base import ErrorPortal, Portal, guardar_descarga, normalizar
 
 # Iframe que contiene el reporte de Power BI.
 SEL_IFRAME = "#embedContainer iframe"
@@ -39,6 +39,11 @@ class Heb2b(Portal):
     # PORTALES["heb2b"].reporte = "Ventas"
     seccion = "Business Info"
     reporte = "Inventarios"
+
+    @property
+    def area(self) -> str:  # type: ignore[override]
+        # Sigue al reporte elegido: si se cambia arriba, la carpeta acompaña.
+        return normalizar(self.reporte)
 
     # Fallback por ID del formulario de login; el rol accesible es lo primario.
     SEL_USUARIO = "#Usuario"
@@ -164,7 +169,7 @@ class Heb2b(Portal):
         except PlaywrightTimeoutError as exc:
             raise ErrorPortal("La exportación de Power BI no generó archivo") from exc
 
-        return [guardar_descarga(info.value, destino, self.clave)]
+        return [guardar_descarga(info.value, destino, self.clave, self.area)]
 
     def _cerrar_sesion(self, page: Page, ui: PuenteUI) -> None:
         """Best-effort: la descarga ya está, un logout fallido no importa."""
