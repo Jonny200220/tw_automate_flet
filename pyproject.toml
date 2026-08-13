@@ -1,0 +1,26 @@
+[project]
+name = "towel-automate"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Jonny Ramirez", email = "jonnyrmzhdz@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "flet>=0.86.5",
+    "keyring>=25.7.0",
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.5",
+    "playwright>=1.62.0",
+    "pydantic-settings>=2.15.0",
+    "supabase>=2.31.0",
+    "xlrd>=2.0.2",
+]
+
+[project.scripts]
+towel-automate = "towel_automate:main"
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"

@@ -1,0 +1,16 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Configuración local y datos de la app
+.env
+descargas/
+.perfil_navegador/
+captcha_*.png
